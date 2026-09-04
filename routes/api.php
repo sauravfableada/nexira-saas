@@ -14,5 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    // Custom POST route for update to bypass PHP's PUT/multipart limitation
+    Route::post('product-categories/{product_category}', [ProductCategoryController::class, 'update']);
     Route::apiResource('product-categories', ProductCategoryController::class);
 });
