@@ -34,4 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Audit Logs API
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
+    Route::post('plans/{plan}', [App\Http\Controllers\PlanController::class, 'update']);
+    Route::apiResource('plans', App\Http\Controllers\PlanController::class);
 });
