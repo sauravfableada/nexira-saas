@@ -37,4 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('plans/{plan}', [App\Http\Controllers\PlanController::class, 'update']);
     Route::apiResource('plans', App\Http\Controllers\PlanController::class);
+
+    Route::post('products/{product}', [App\Http\Controllers\ProductController::class, 'update']);
+    Route::apiResource('products', App\Http\Controllers\ProductController::class);
 });
