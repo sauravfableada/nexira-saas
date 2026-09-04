@@ -76,6 +76,91 @@ class AuthController extends Controller
     /**
      * Change Password API
      */
+    /**
+     * Get Admin Profile API
+     */
+    public function getProfile(Request $request)
+    {
+        $user = $request->user();
+        
+        // Convert profile_image to full url if needed
+        if ($user->profile_image && !str_starts_with($user->profile_image, 'http')) {
+            $user->profile_image = asset($user->profile_image);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'contact' => $user->contact,
+                'profile_image' => $user->profile_image,
+            ]
+        ]);
+    }
+
+    /**
+     * Update Admin Profile API
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'contact' => 'nullable|string|max:20',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $data = $validator->validated();
+
+        $oldValues = $user->only(['name', 'email', 'contact', 'profile_image']);
+
+        if ($request->hasFile('profile_image')) {
+            $path = $request->file('profile_image')->store('profiles', 'public');
+            $data['profile_image'] = '/storage/' . $path;
+        }
+
+        // Update fields if provided
+        if (isset($data['name'])) $user->name = $data['name'];
+        if (isset($data['email'])) $user->email = $data['email'];
+        if (isset($data['contact'])) $user->contact = $data['contact'];
+        if (isset($data['profile_image'])) $user->profile_image = $data['profile_image'];
+
+        $user->save();
+
+        $newValues = $user->only(['name', 'email', 'contact', 'profile_image']);
+        AuditLogger::log('Profile Updated', 'Admin Profile Changed', 'Admin updated their profile.', $oldValues, $newValues);
+
+        // Convert profile_image to full url for response
+        if ($user->profile_image && !str_starts_with($user->profile_image, 'http')) {
+            $user->profile_image = asset($user->profile_image);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Profile updated successfully.',
+            'data' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'contact' => $user->contact,
+                'profile_image' => $user->profile_image,
+            ]
+        ]);
+    }
+
+    /**
+     * Change Password API
+     */
     public function changePassword(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
