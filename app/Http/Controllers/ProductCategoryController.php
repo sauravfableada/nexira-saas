@@ -73,8 +73,8 @@ class ProductCategoryController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('image')) {
-            if ($productCategory->image) {
-                Storage::disk('public')->delete($productCategory->image);
+            if ($productCategory->getRawOriginal('image')) {
+                Storage::disk('public')->delete($productCategory->getRawOriginal('image'));
             }
             $data['image'] = $request->file('image')->store('product_categories', 'public');
         }
@@ -93,8 +93,8 @@ class ProductCategoryController extends Controller
      */
     public function destroy(ProductCategory $productCategory)
     {
-        if ($productCategory->image) {
-            Storage::disk('public')->delete($productCategory->image);
+        if ($productCategory->getRawOriginal('image')) {
+            Storage::disk('public')->delete($productCategory->getRawOriginal('image'));
         }
 
         $productCategory->delete();
